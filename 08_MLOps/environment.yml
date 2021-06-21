@@ -1,0 +1,19 @@
+name: mlops_example
+channels:
+  - conda-forge
+dependencies:
+  - jupyterlab
+  - ipykernel
+  - pip
+  - aif360
+  - plotly
+  - optuna
+  - pandas
+  - jupytext
+  - dvc
+  - python=3.8
+  - scikit-learn
+  - nodejs
+  - ipywidgets
+  - sdv
+  - dvc-s3
