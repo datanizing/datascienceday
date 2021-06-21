@@ -1,0 +1,8 @@
+stages:
+  load_data:
+    cmd: python load_data.pct.py
+    wdir: notebooks
+    deps:
+    - load_data.pct.py
+    outs:
+    - ../data/interim/model_dev_data.pkl

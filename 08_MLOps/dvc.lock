@@ -1,0 +1,12 @@
+schema: '2.0'
+stages:
+  load_data:
+    cmd: python load_data.pct.py
+    deps:
+    - path: load_data.pct.py
+      md5: d167fc010595607cf9cdd162aaa47950
+      size: 1574
+    outs:
+    - path: ../data/interim/model_dev_data.pkl
+      md5: e57956bf5443ed65d2ac86257b074dbb
+      size: 16631
