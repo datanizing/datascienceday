@@ -21,11 +21,8 @@ objects:
       app: ha-mlops
       component: grafana
   type: Opaque
-  data:
-    key.json: ""
   stringData:
-    access-key: "${MINIO_ACCESS_KEY}"
-    secret-key: "${MINIO_SECRET_KEY}"
+    GF_SECURITY_ADMIN_PASSWORD: "${GF_SECURITY_ADMIN_PASSWORD}"
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
@@ -305,4 +302,18 @@ objects:
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
-            
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: performance-monitoring
+    name: grafana
+  spec:
+    type: ClusterIP
+    ports:
+      - name: grafana
+        port: 3000
+        protocol: TCP
+        targetPort: 3000
+    selector:
+      app: grafana

@@ -36,3 +36,6 @@ dvc remote modify --local minio access_key_id 'ssge333434'
 dvc remote modify --local minio secret_access_key 'sdsge343sfSFFDFDF'
 
 oc process -f deployment/prometheus.yml | oc apply -f -
+
+oc port-forward svc/grafana 8888:3000
+oc port-forward svc/prometheus 9090:9090
