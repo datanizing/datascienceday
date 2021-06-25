@@ -100,8 +100,6 @@ objects:
         labels:
           app: ha-mlops
           component: minio
-        annotations:
-          checksum/credentials-secret: ddac3173d81915bbbc85158376b4b1c3d4d7e3ac3fbbd4808ddfe935919f5058
       spec:
         containers:
           - name: minio

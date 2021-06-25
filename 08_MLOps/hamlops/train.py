@@ -18,14 +18,22 @@ import json
 
 import pandas as pd 
 import joblib
+import mlflow
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.model_selection import GridSearchCV, train_test_split
 
-from nuedigitalmlapi import model, report
+from hamlops import model, report
+
+LOG = logging.getLogger(__name__)
 
 def train():
     """Funktion um Modell zu traininieren"""
-    logging.basicConfig(level=logging.DEBUG)
+
+    # set tracking url to central file
+    mlflow.set_tracking_uri("mlruns/")
+    mlflow.sklearn.autolog()
+
+    mlflow.set_experiment('New experiment')
 
     # Einlesen der Daten
     filepath = "data/interim/model_dev_data.pkl"
@@ -59,10 +67,11 @@ def train():
 
     start = datetime.datetime.now()
     logging.info("Starting fitting")
-
-    # Grid-Search unter Berücksichtigung der Sample-Weights durchführen
-    grid_search.fit(features_train, labels_train, 
-        **{"Classifier__sample_weight": sample_weight})
+    
+    with mlflow.start_run() as run:
+        # Grid-Search unter Berücksichtigung der Sample-Weights durchführen
+        grid_search.fit(features_train, labels_train, 
+            **{"Classifier__sample_weight": sample_weight})
 
     end = datetime.datetime.now()
     logging.info("Fitting took %s", end - start)

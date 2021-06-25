@@ -20,7 +20,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 
 helm template bitnami/minio --set ingress.enabled=true > deployment/minio.yml
 
-oc process -f deployment/minio.yml | oc create -f -
+oc process -f deployment/minio.yml | oc apply -f -
 
 http://ha-mlops-minio-myproject.127.0.0.1.nip.io/minio/login
 
@@ -34,3 +34,5 @@ dvc remote add -d minio s3://dvcrepo
 dvc remote modify minio endpointurl http://ha-mlops-minio-myproject.127.0.0.1.nip.io/ 
 dvc remote modify --local minio access_key_id 'ssge333434'
 dvc remote modify --local minio secret_access_key 'sdsge343sfSFFDFDF'
+
+oc process -f deployment/prometheus.yml | oc apply -f -
