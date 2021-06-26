@@ -6,3 +6,12 @@ stages:
     - load_data.pct.py
     outs:
     - ../data/interim/model_dev_data.pkl
+  train:
+    cmd: python -m hamlops.train
+    deps:
+    - data/interim/model_dev_data.pkl
+    outs:
+    - models/model.pkl
+    metrics:
+    - score.json:
+        cache: false

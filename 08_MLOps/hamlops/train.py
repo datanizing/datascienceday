@@ -62,8 +62,7 @@ def train():
         "Classifier__max_depth": [2, 3],
         "Classifier__min_samples_leaf": [5, 20]
     }
-    grid_search = GridSearchCV(clf, param_grid=param_grid, cv=4, n_jobs=4,
-        iid=False)
+    grid_search = GridSearchCV(clf, param_grid=param_grid, cv=4, n_jobs=4)
 
     start = datetime.datetime.now()
     logging.info("Starting fitting")
