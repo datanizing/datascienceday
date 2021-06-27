@@ -51,3 +51,7 @@ oc process -f deployment/modelapi.yml | oc apply -f -
 oc start-build ha-mlops-modelapi-build --from-dir=. --follow
 
 oc import-image python-38:1-61 --from=registry.redhat.io/rhel8/python-38:1-61 -n myproject 
+
+Explainer Response HTML: https://fastapi.tiangolo.com/advanced/custom-response/#html-response
+
+Extrapolation: https://stats.stackexchange.com/questions/219579/what-is-wrong-with-extrapolation
