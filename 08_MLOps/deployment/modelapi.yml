@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ha-mlops-modelapi
+parameters: []
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ha-mlops-modelapi
+    labels:
+      app: ha-mlops
+      component: modelapi
+      build: ha-mlops-modelapi-build
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ha-mlops-modelapi-build
+    labels:
+      app: ha-mlops
+      component: modelapi
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 'ha-mlops-modelapi:latest'
+    resources:
+      limits:
+        memory: 4Gi
+    source:
+      git:
+        uri: https://github.com/datanizing/datascienceday.git
+        ref: "feature/mlops"
+        contextDir: "08_MLOps"
+    strategy:
+      type: Docker
+      dockerStrategy:
+        env:
+        - name: "MINIO_ACCESS_KEY"
+          valueFrom:
+            secretKeyRef:
+              name: ha-mlops-minio
+              key: access-key
+        - name: "MINIO_SECRET_KEY"
+          valueFrom:
+            secretKeyRef:
+              name: ha-mlops-minio
+              key: secret-key

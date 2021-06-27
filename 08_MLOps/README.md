@@ -9,6 +9,7 @@ Andrew L. Maas, Raymond E. Daly, Peter T. Pham, Dan Huang, Andrew Y. Ng, and Chr
 ```
 wget IMDB Dataset
 
+https://127.0.0.1:8443/console/catalog
 
 Containt Suche RedHat:
 https://catalog.redhat.com/software/containers/search
@@ -39,3 +40,14 @@ oc process -f deployment/prometheus.yml | oc apply -f -
 
 oc port-forward svc/grafana 8888:3000
 oc port-forward svc/prometheus 9090:9090
+
+
+dvc run -n train -d data/interim/model_dev_data.pkl -o models/model.pkl -M score.json python -m hamlops.train
+
+mlflow ui --backend-store-uri file://mlruns
+
+oc process -f deployment/modelapi.yml | oc apply -f -
+
+oc start-build ha-mlops-modelapi-build --from-dir=. --follow
+
+oc import-image python-38:1-61 --from=registry.redhat.io/rhel8/python-38:1-61 -n myproject 
