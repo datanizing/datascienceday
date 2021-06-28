@@ -103,7 +103,7 @@ objects:
       spec:
         containers:
           - name: minio
-            image: docker.io/bitnami/minio:2021.6.17-debian-10-r0
+            image: bitnami/minio:2021.6.17-debian-10-r0
             imagePullPolicy: "IfNotPresent"
             env:
               - name: BITNAMI_DEBUG

@@ -52,6 +52,20 @@ objects:
 #         name: 7.5.9-debian-10-r0
 #         referencePolicy:
 #           type: Source
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: performance-monitoring
+      component: grafana
+    name: grafana
+  spec:
+    path: /
+    port:
+      targetPort: grafana
+    to:
+      kind: Service
+      name: grafana
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -80,7 +94,7 @@ objects:
           app.kubernetes.io/component: prometheus
       spec:
         containers:
-          - image: docker.io/bitnami/prometheus:2.28.0-debian-10-r1
+          - image: docker-registry.default.svc:5000/tb-container/prometheus:2
             imagePullPolicy: IfNotPresent
             livenessProbe:
               failureThreshold: 3
@@ -272,7 +286,7 @@ objects:
                     name: ha-mlops-grafana
               - name: GF_SECURITY_ADMIN_USER
                 value: admin
-            image: docker.io/bitnami/grafana:7.5.9-debian-10-r0
+            image: docker-registry.prod.oscp.easycredit.intern/tb-container/grafana:7
             imagePullPolicy: IfNotPresent
             name: grafana
             ports:
@@ -297,11 +311,36 @@ objects:
                 memory: 256Mi
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
+            volumeMounts:
+              - mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+                name: grafana-config
+                subPath: datasources.yaml
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
+        volumes:
+          - configMap:
+              defaultMode: 420
+              name: grafana-config
+            name: grafana-config
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: performance-monitoring
+      app.kubernetes.io/component: prometheus
+    name: grafana-config
+  data: 
+    datasources.yaml: >-
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: "proxy"
+          url: http://prometheus:9090
+          isDefault: true
 - apiVersion: v1
   kind: Service
   metadata:
@@ -317,3 +356,4 @@ objects:
         targetPort: 3000
     selector:
       app: grafana
+      app.kubernetes.io/component: grafana
