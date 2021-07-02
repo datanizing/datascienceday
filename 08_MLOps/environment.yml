@@ -1,19 +1,16 @@
-name: mlops_example
+name: mlops
 channels:
   - conda-forge
+  - pytorch
 dependencies:
-  - jupyterlab
-  - ipykernel
-  - pip
-  - aif360
-  - plotly
-  - optuna
-  - pandas
-  - jupytext
-  - dvc
   - python=3.8
-  - scikit-learn
-  - nodejs
-  - ipywidgets
-  - sdv
-  - dvc-s3
+  - ipykernel=5.5.5
+  - pip=21.1.2
+  - dvc-s3=2.1.0
+  - prometheus-fastapi-instrumentator
+  - fastapi
+  - uvicorn
+  - transformers
+  - pytorch
+  - cpuonly
+  - doit

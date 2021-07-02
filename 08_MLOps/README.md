@@ -55,3 +55,10 @@ oc import-image python-38:1-61 --from=registry.redhat.io/rhel8/python-38:1-61 -n
 Explainer Response HTML: https://fastapi.tiangolo.com/advanced/custom-response/#html-response
 
 Extrapolation: https://stats.stackexchange.com/questions/219579/what-is-wrong-with-extrapolation
+
+oc project daan-build
+
+oc apply -f deployment\import_images.yml
+
+python app/app.py
+

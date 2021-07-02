@@ -2,4 +2,4 @@
     remote = minio
 ['remote "minio"']
     url = s3://dvcrepo
-    endpointurl = http://ha-mlops-minio-myproject.127.0.0.1.nip.io/
+    endpointurl = http://ha-mlops-minio-daan-eval.ewu.oscp.easycredit.intern/

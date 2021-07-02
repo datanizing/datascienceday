@@ -286,7 +286,7 @@ objects:
                     name: ha-mlops-grafana
               - name: GF_SECURITY_ADMIN_USER
                 value: admin
-            image: docker-registry.prod.oscp.easycredit.intern/tb-container/grafana:7
+            image: docker-registry.default.svc:5000/tb-container/grafana:7
             imagePullPolicy: IfNotPresent
             name: grafana
             ports:

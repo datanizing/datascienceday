@@ -137,3 +137,6 @@ dmypy.json
 openshift.local.clusterup
 
 mlruns/
+
+.doit*
+build.tar.gz

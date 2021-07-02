@@ -46,3 +46,15 @@ objects:
           kind: DockerImage
           name: docker-registry.prod.oscp.easycredit.intern/bitnami/minio:2021.6.17
         name: "2021.6.17"
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    name: python
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+      - from:
+          kind: DockerImage
+          name: docker-registry.prod.oscp.easycredit.intern/python:3.8.10-debian-10-r47
+        name: "3.8.10"

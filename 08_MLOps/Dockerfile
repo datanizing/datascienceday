@@ -1,4 +1,4 @@
-FROM bitnami/python:3.8.10-debian-10-r47
+FROM docker-registry.default.svc:5000/daan-eval/python:3.8.10
 
 EXPOSE 8080
 
@@ -20,7 +20,7 @@ RUN pip install -r requirements.txt --no-cache-dir && \
 RUN dvc remote modify --local minio access_key_id '${MINIO_ACCESS_KEY}' && \
     dvc remote modify --local minio secret_access_key '${MINIO_SECRET_KEY}' && \
     dvc config core.no_scm true && \
-    dvc pull models/model.pkl
+    dvc pull models/model_v1.dvc
 
 # Berechtigungen setzen
 RUN chgrp -R 0 . && \
