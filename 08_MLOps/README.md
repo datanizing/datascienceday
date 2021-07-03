@@ -48,8 +48,6 @@ mlflow ui --backend-store-uri file://mlruns
 
 oc process -f deployment/modelapi.yml | oc apply -f -
 
-oc start-build ha-mlops-modelapi-build --from-dir=. --follow
-
 oc import-image python-38:1-61 --from=registry.redhat.io/rhel8/python-38:1-61 -n myproject 
 
 Explainer Response HTML: https://fastapi.tiangolo.com/advanced/custom-response/#html-response
@@ -60,5 +58,5 @@ oc project daan-build
 
 oc apply -f deployment\import_images.yml
 
-python app/app.py
+python -m app.app
 

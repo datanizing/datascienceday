@@ -11,7 +11,7 @@ from fastapi import FastAPI, Response
 from pydantic import BaseModel, Field
 from transformers import pipeline
 
-from monitoring import instrumentator
+from .monitoring import instrumentator
 
 # Erzeugen der Flask WSGI Anwendung
 app = FastAPI()

@@ -56,5 +56,5 @@ objects:
     tags:
       - from:
           kind: DockerImage
-          name: docker-registry.prod.oscp.easycredit.intern/python:3.8.10-debian-10-r47
+          name: docker.io/python:3.8.10-debian-10-r47
         name: "3.8.10"

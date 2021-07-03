@@ -10,7 +10,8 @@ def task_build():
     """ Zip files and start build """
 
     build_files = glob("*.py") + glob("app/*.py") \
-                               + ["Dockerfile", "requirements.txt", "models/model_v1.dvc"]
+                               + ["Dockerfile", "app/run.sh", "environment_ops.yml", "requirements.txt", ".dvc/config",
+                               "models/model_v1.dvc"]
     def tar_build():
         with tarfile.open("build.tar.gz", "w:gz") as tar:
             for file in build_files:
