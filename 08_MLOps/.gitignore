@@ -140,3 +140,5 @@ mlruns/
 
 .doit*
 build.tar.gz
+
+sentiment-model-api-client/

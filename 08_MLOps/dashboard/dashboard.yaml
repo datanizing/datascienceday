@@ -29,11 +29,12 @@
       },
       "id": 4,
       "panels": [],
-      "title": "Row title",
+      "title": "Model",
       "type": "row"
     },
     {
       "datasource": null,
+      "description": "MIttelerer Sentiment Score",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -58,7 +59,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 7,
+        "w": 4,
         "x": 0,
         "y": 1
       },
@@ -79,14 +80,82 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "fastapi_model_model_score_sum/fastapi_model_model_score_count",
+          "expr": "increase(fastapi_model_model_score_sum[10m])/increase(fastapi_model_model_score_count[10m])",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Panel Title",
+      "title": "Avg. Score in last 10 min",
       "type": "gauge"
+    },
+    {
+      "cards": {
+        "cardPadding": null,
+        "cardRound": null
+      },
+      "color": {
+        "cardColor": "#b4ff00",
+        "colorScale": "sqrt",
+        "colorScheme": "interpolateOranges",
+        "exponent": 0.5,
+        "mode": "spectrum"
+      },
+      "dataFormat": "tsbuckets",
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 7,
+        "x": 4,
+        "y": 1
+      },
+      "heatmap": {},
+      "hideZeroBuckets": true,
+      "highlightCards": true,
+      "id": 8,
+      "interval": "1m",
+      "legend": {
+        "show": true
+      },
+      "pluginVersion": "7.5.9",
+      "reverseYBuckets": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(increase(fastapi_model_sentiment_total[$__interval])) by (sentiment)",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "{{sentiment}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sentiment",
+      "tooltip": {
+        "show": true,
+        "showHistogram": false
+      },
+      "type": "heatmap",
+      "xAxis": {
+        "show": true
+      },
+      "xBucketNumber": null,
+      "xBucketSize": null,
+      "yAxis": {
+        "decimals": null,
+        "format": "short",
+        "logBase": 1,
+        "max": null,
+        "min": null,
+        "show": true,
+        "splitFactor": null
+      },
+      "yBucketBound": "auto",
+      "yBucketNumber": null,
+      "yBucketSize": null
     },
     {
       "cards": {
@@ -109,7 +178,7 @@
       "gridPos": {
         "h": 9,
         "w": 12,
-        "x": 7,
+        "x": 11,
         "y": 1
       },
       "heatmap": {},
@@ -125,7 +194,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(rate(fastapi_model_model_score_bucket[$__interval])) by (le)",
+          "expr": "sum(increase(fastapi_model_model_score_bucket[$__interval])) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -149,7 +218,7 @@
       "xBucketSize": null,
       "yAxis": {
         "decimals": null,
-        "format": "none",
+        "format": "short",
         "logBase": 1,
         "max": null,
         "min": null,
@@ -161,7 +230,7 @@
       "yBucketSize": null
     }
   ],
-  "refresh": "30m",
+  "refresh": "5s",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -169,12 +238,12 @@
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "New dashboard Copy",
+  "title": "Model Score",
   "uid": "PGUZYQznk",
-  "version": 3
+  "version": 9
 }

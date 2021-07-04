@@ -33,7 +33,7 @@ RUN conda env create -f environment_ops.yml && \
     dvc remote modify --local minio access_key_id ${MINIO_ACCESS_KEY} && \
     dvc remote modify --local minio secret_access_key ${MINIO_SECRET_KEY} && \
     dvc config core.no_scm true && \
-    dvc pull models/model_v1.dvc
+    dvc pull models/model.dvc
 
 # Berechtigungen setzen
 RUN chgrp -R 0 . && \

@@ -2,7 +2,7 @@ from prometheus_client import Histogram, Counter
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 from prometheus_fastapi_instrumentator.metrics import Info
 
-NAMESPACE = "fastapi"
+NAMESPACE = "mlops"
 SUBSYSTEM = "model"
 
 instrumentator = Instrumentator()

@@ -14,3 +14,6 @@ dependencies:
   - pytorch
   - cpuonly
   - doit
+  - pandas
+  - pip: 
+    - openapi-python-client
