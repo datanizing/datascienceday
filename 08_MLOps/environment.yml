@@ -1,0 +1,19 @@
+name: mlops
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.8
+  - ipykernel=5.5.5
+  - pip=21.1.2
+  - dvc-s3=2.1.0
+  - prometheus-fastapi-instrumentator
+  - fastapi
+  - uvicorn
+  - transformers
+  - pytorch
+  - cpuonly
+  - doit
+  - pandas
+  - pip: 
+    - openapi-python-client
