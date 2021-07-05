@@ -1,0 +1,4 @@
+[core]
+    remote = minio
+['remote "minio"']
+    url = s3://dvcrepo/
