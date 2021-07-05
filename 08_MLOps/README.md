@@ -25,14 +25,27 @@ dvc pull
 python app.py
 ```
 
+## API erzeugen
+
+Während die Model API läuft, folgendes ausführen:
+```
+openapi-python-client generate --url http://127.0.0.1:8080/openapi.json
+```
+
+
 ## Setup aus Prometheus, Grafana und Model API starten
 
 Voraussetzung: 
 * lokale [Docker](https://docs.docker.com/get-docker/) Installation
 
 ```
-docker-compose
+docker-compose build
+docker-compose up
 ```
+![Dashboard](images/dashboard.png)
+Inspired by [Jeremy Jordan
+A simple solution for monitoring ML systems.
+](https://www.jeremyjordan.me/ml-monitoring/)
 
 ## Referenzen:
 * [fastAPI](https://fastapi.tiangolo.com/)

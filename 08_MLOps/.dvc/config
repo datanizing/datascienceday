@@ -1,4 +1,4 @@
 [core]
-    remote = minio
-['remote "minio"']
-    url = s3://dvcrepo/
+    remote = s3
+['remote "s3"']
+    url = https://dvcrepo.s3.eu-central-1.amazonaws.com/mlops
