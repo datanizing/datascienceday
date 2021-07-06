@@ -42,6 +42,15 @@ Voraussetzung:
 docker-compose build
 docker-compose up
 ```
+
+Mit dem Skript `notebooks/call_api.pct.py` können Aufrufe generiert werden:
+```
+cd notebooks
+python call_api.pct.py
+```
+
+Das Dashboard kann dann unter http://localhost:3000/ nach dem Login  (User: admin, Passwort: 12345) im Bereich Dashboards ("Model Score") aufgerufen werden.
+
 ![Dashboard](images/dashboard.png)
 Inspired by [Jeremy Jordan
 A simple solution for monitoring ML systems.
