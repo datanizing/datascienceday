@@ -141,4 +141,5 @@ mlruns/
 .doit*
 build.tar.gz
 
+# generated API client
 sentiment-model-api-client/

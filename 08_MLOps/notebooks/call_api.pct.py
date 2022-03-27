@@ -32,6 +32,9 @@ data_df = pd.read_csv("../data/raw/transport-short.csv", header=None, nrows=1000
        'author', 'num_comments', 'created_utc', 'permalink', 'url', 'text',
        'level', 'top_parent'])
 
+# %%
+data_df.head()
+
 # %% [markdown]
 # ## Client Laden
 # Der Client wird mittles [`openapi-python-client` Generator](https://github.com/openapi-generators/openapi-python-client) z.B. wie folgt erzeugt.
