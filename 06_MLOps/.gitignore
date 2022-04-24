@@ -131,9 +131,6 @@ dmypy.json
 # IDE
 *.vscode
 
-# Jupytext is used
-*.ipynb
-
 openshift.local.clusterup
 
 mlruns/
