@@ -134,5 +134,16 @@ dmypy.json
 # Jupytext is used
 *.ipynb
 
+openshift.local.clusterup
+
+mlruns/
+
+.doit*
+build.tar.gz
+
 # generated API client
 sentiment-model-api-client/
+
+frontend/
+
+pipeline.out

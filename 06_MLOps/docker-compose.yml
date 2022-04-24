@@ -1,6 +1,19 @@
 version: "2"
 
 services:
+
+    minio:
+        image: docker.io/bitnami/minio:2021.6.17
+        environment: 
+        - MINIO_ACCESS_KEY=minio-access-key
+        - MINIO_SECRET_KEY=minio-secret-key
+        expose:
+        - 9000
+        ports:
+        - 9000:9000
+        volumes:
+        - ./docker-compose/minio/data:/data
+        
     prometheus:
         image: docker.io/bitnami/prometheus:2
         volumes:
@@ -24,8 +37,13 @@ services:
         - 3000:3000
     
     modelapi:
-        build: .
+        image: modelapi
         expose:
         - 8080
         ports:
         - 8080:8080
+        command: 
+        - uvicorn 
+        - app:app 
+        - --host=0.0.0.0 
+        - --port=8080

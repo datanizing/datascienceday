@@ -1,7 +1,3 @@
-#!/bin/python
-from fastapi import FastAPI, Response
-from pydantic import BaseModel, Field
-from transformers import pipeline
 from prometheus_client import Histogram, Counter
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 from prometheus_fastapi_instrumentator.metrics import Info
@@ -19,7 +15,7 @@ def model_output(metric_namespace: str = "", metric_subsystem: str = ""):
     SCORE = Histogram(
         "model_score",
         "Predicted score of model",
-        buckets=(0, .1, .2, .3, .4, .5, .6, .7, .8, .9),
+        buckets=(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1, 1.1),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
@@ -42,37 +38,3 @@ def model_output(metric_namespace: str = "", metric_subsystem: str = ""):
     return instrumentation
 
 instrumentator.add(model_output(metric_namespace=NAMESPACE, metric_subsystem=SUBSYSTEM))
-
-app = FastAPI(
-    title="Sentiment Model API",
-    description="Sentiment Model API",
-    version="0.1",
-)
-
-# Prometheus Instrumentator verknüpfen
-instrumentator.instrument(app).expose(app)
-
-model_path = "models/model"
-sentiment_classifier = pipeline("sentiment-analysis", model_path)
-
-class Input(BaseModel):
-    sentence: str = Field(example="This is a great reddit post!")
-
-# Datenmodell für Ausgabe
-class Sentiment(BaseModel):
-    label: str = Field(description="Sentiment", example="NEGATIVE")
-    score: float = Field(description="Score", example=0.95)
-
-# Endpunkt für Prediction
-@app.post('/predict', response_model=Sentiment, operation_id="predict_post")
-async def predict(response: Response, input: Input):
-    pred = sentiment_classifier(input.sentence)[0]
-    sentiment = Sentiment(**pred)
-    response.headers["X-model-score"] = str(sentiment.score)
-    response.headers["X-model-sentiment"] = str(sentiment.label)
-    return sentiment
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8080)

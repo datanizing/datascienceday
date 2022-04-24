@@ -14,9 +14,9 @@ conda env create -f environment.yml
 conda activate mlops
 ```
 
-Daten per dvc holen:
+Daten per dvc erzeugen:
 ```
-dvc pull
+dvc repro
 ```
 
 ## Starten der API:
@@ -39,6 +39,7 @@ Voraussetzung:
 * lokale [Docker](https://docs.docker.com/get-docker/) Installation
 
 ```
+docker build -t modelapi --network="host" .
 docker-compose build
 docker-compose up
 ```
@@ -56,6 +57,10 @@ Inspired by [Jeremy Jordan
 A simple solution for monitoring ML systems.
 ](https://www.jeremyjordan.me/ml-monitoring/)
 
+
+
+
+
 ## Referenzen:
 * [fastAPI](https://fastapi.tiangolo.com/)
 * [pydantic]()
@@ -67,3 +72,19 @@ A simple solution for monitoring ML systems.
 * [minishift](https://docs.okd.io/3.11/minishift/getting-started/index.html)
 * [Grafana](https://grafana.com/)
 * [Prometheus](https://prometheus.io/)
+
+
+
+
+# Troubleshooting
+
+## error checking context
+Fehlermeldung:
+```
+error checking context: 'no permission to read from '/.../datascienceday/06_MLOps/docker-compose/minio/data/.access_key''.
+```
+
+Die Rechte müssen ausgeweitet werden, damit auch der User wieder auf die vom Docker Host angelegten Verzeichnisse zugreifen kann.
+```
+sudo chmod -R a+rw docker-compose/minio
+```
