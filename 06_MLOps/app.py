@@ -1,3 +1,4 @@
+#!/bin/python
 from fastapi import FastAPI, Response
 from pydantic import BaseModel, Field
 from transformers import pipeline

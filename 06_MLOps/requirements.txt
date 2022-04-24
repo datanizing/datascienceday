@@ -1,3 +1,5 @@
-dvc[s3]==2.1.0
+dvc[s3]==2.10.1
 fastapi[all]
 transformers[torch]
+prometheus_client
+prometheus-fastapi-instrumentator

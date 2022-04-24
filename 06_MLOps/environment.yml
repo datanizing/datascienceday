@@ -6,14 +6,13 @@ dependencies:
   - python=3.8
   - ipykernel
   - pip
-  - dvc-s3
+  - dvc-s3=2.10.1
   - prometheus-fastapi-instrumentator
   - fastapi
   - uvicorn
   - transformers
   - pytorch
   - cpuonly
-  - doit
   - pandas
   - pip: 
     - openapi-python-client

@@ -8,18 +8,22 @@ USER root
 
 WORKDIR /app
 
-COPY app.py .
 COPY requirements.txt .
-COPY models/model.dvc models/model.dvc
-COPY .dvc/config .dvc/config
-COPY .dvc/config.local .dvc/config.local
 
 RUN pip install -r requirements.txt --no-cache-dir 
 
 # # Modell aus Modell-Repository ziehen
 # RUN source ~/.bashrc && conda activate mlops && \
+
+COPY dvc.yaml dvc.yaml
+COPY dvc.lock dvc.lock
+COPY .dvc/config .dvc/config
+COPY .dvc/config.local .dvc/config.local
+
 RUN dvc config core.no_scm true && \
-    dvc pull models/model.dvc
+    dvc pull models/model/
+
+COPY app.py .
 
 # Berechtigungen setzen
 RUN chgrp -R 0 . && \
@@ -31,4 +35,4 @@ USER 1001
 
 WORKDIR /app
 
-CMD /app/app.py
+CMD python app.py
