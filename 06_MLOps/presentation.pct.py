@@ -25,9 +25,6 @@
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # * __Reproduzierbarkeit__: 
 #     * Versionierung von Daten und Code
-# * __Experiment Tracking__:
-#     * Dokumentation der Auswahl des Modells.
-#     * Evaluation des Modells.
 # * __Monitoring__:
 #     * Überwachung des Verhaltens des Modells in Produktion
 
@@ -37,18 +34,12 @@
 # * GitHub: https://github.com/datanizing/datascienceday/
 # * Verzeichnis: `06_MLOps`
 
-# %% [markdown] slideshow={"slide_type": "skip"}
-# # Reproduzierbarkeit mit DVC
-#
-# [DVC](https://dvc.org/)
-# ![DVC](images/data_code_versioning.png)
-
 # %% [markdown] slideshow={"slide_type": "slide"}
 # ## [DVC](https://dvc.org/)
 #
 # ![DVC_project_versions](https://dvc.org/static/39d86590fa8ead1cd1247c883a8cf2c0/fa73e/project-versions.webp)
 
-# %% [markdown] slideshow={"slide_type": "slide"}
+# %% [markdown] slideshow={"slide_type": "subslide"}
 # ## DVC Pipelines
 #
 # #### Daten laden
@@ -102,25 +93,6 @@
 #     - models/model/
 # ```
 
-# %% slideshow={"slide_type": "skip"}
-# # %load dvc.yaml
-stages:
-  load_data:
-    cmd: python load_data.py
-    outs:
-    - data/raw/transport-short.csv
-    deps:
-    - load_data.py
-  train:
-    cmd: python train.py
-    deps:
-    - data/raw/transport-short.csv
-    - train.py
-    outs:
-    - models/model/
-
-
-
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # Reproduzieren der Schritte mit
 
@@ -146,36 +118,6 @@ stages:
 #   train:
 #      ...
 # ```
-
-# %% slideshow={"slide_type": "skip"}
-# # %load dvc.lock
-schema: '2.0'
-stages:
-  load_data:
-    cmd: python load_data.py
-    deps:
-    - path: load_data.py
-      md5: ddeb3c7968c47788fb055752566e725d
-      size: 153
-    outs:
-    - path: data/raw/transport-short.csv
-      md5: 3057d4f316405b0a282328d2f9ee5748
-      size: 551260620
-  train:
-    cmd: python train.py
-    deps:
-    - path: data/raw/transport-short.csv
-      md5: 3057d4f316405b0a282328d2f9ee5748
-      size: 551260620
-    - path: train.py
-      md5: 90d447a7d32be8f3796cffa4f600bab1
-      size: 278
-    outs:
-    - path: models/model/
-      md5: 14660da34863d60439b34f830f33bf03.dir
-      size: 268558921
-      nfiles: 6
-
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## DVC Data
@@ -395,7 +337,7 @@ data_df = pd.read_csv("data/raw/transport-short.csv", header=None, nrows=1000, n
        'level', 'top_parent'])
 data_df.head(2)
 
-# %% [markdown]
+# %% [markdown] slideshow={"slide_type": "subslide"}
 # ### API mit 500 Samples aufrufen
 
 # %% slideshow={"slide_type": "fragment"}
@@ -413,9 +355,11 @@ with pd.option_context("display.max_colwidth", None):
 
 
 # %% [markdown] slideshow={"slide_type": "slide"}
-# # Monitoring
+# # [Dashboard](http://localhost:3000/d/PGUZYQznk/model-score?orgId=1&refresh=5s)
 #
 # ![dashboard showing distriubtions of models scores, outlier scores, labels and drifts over time](images/dashboard.png)
+#
+#
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## Was kann man messen?
