@@ -1,0 +1,14 @@
+stages:
+  load_data:
+    cmd: python load_data.py
+    outs:
+    - data/raw/transport-short.csv
+    deps:
+    - load_data.py
+  train:
+    cmd: python train.py
+    deps:
+    - data/raw/transport-short.csv
+    - train.py
+    outs:
+    - models/model/
