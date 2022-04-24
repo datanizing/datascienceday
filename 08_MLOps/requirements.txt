@@ -1,3 +1,0 @@
-dvc[s3]==2.1.0
-fastapi[all]
-transformers[torch]

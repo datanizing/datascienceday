@@ -1,0 +1,510 @@
+---
+title: "Data prep"
+author: "Dr. Shirin Elsinghorst"
+date: '2022-02-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+Wir haben die Daten für den Transport-Flair aus den Technology Subreddit analysiert. Ein CSV-File findest du unter https://datanizing.com/data-science-day/transport-short.7z, wenn du lieber eine SQLite-Datenbank nutzen möchtest, gerne unter https://datanizing.com/data-science-day/technology-transport-short.7z. Die Daten sind schon bereinigt. Die Jupyter-Notebooks vom letzten Data Science Day liegen auf https://github.com/datanizing/datascienceday/.
+
+https://datanizing.com/data-science-day/transport-short.7z
+ 
+```{r}
+library(readr)
+library(tidyverse)
+library(tidytext)
+library(lubridate)
+```
+ 
+```{r}
+cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
+          "#999999", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot <- function(...) ggplot2::ggplot(...) + 
+  scale_color_manual(values = cbp2) +
+  scale_fill_manual(values = cbp2) + # note: needs to be overridden when using continuous color scales
+  theme_bw()
+```
+
+## Reddit API
+
+https://www.reddit.com/dev/api/
+
+```{r}
+data_reddit <- read_csv(paste0("data/", "transport-short.csv"),
+                        col_names = c("id_text_not_null_primary_key", "kind_text", "title_text", "link_id_text", "parent_id_text", "ups_integer", "downs_integer", "score_integer", "author_text", "num_comments", "created_utc_timestamp", "permalink_text", "url_text", "text_text", "level_integer", "top_parent_text"),
+                        n_max = Inf) %>%
+  mutate(prefix = gsub("(^t.)(_.*)", "\\1", id_text_not_null_primary_key)) %>%
+  select(
+    id_text_not_null_primary_key,
+    prefix,
+    link_id_text,
+    top_parent_text,
+    title_text,
+    text_text,
+    author_text,
+    num_comments,
+    ups_integer,
+    downs_integer,
+    score_integer,
+    created_utc_timestamp
+         )
+
+data_reddit %>%
+  head()
+```
+ 
+### Prefix types
+
+- t1_:	Comment
+- t3_:	Link
+
+```{r}
+data_reddit %>%
+  count(prefix)
+```
+
+```{r}
+data_reddit_comments <- data_reddit %>%
+  filter(prefix == "t1",
+         author_text != "[deleted]",
+         author_text != "AutoModerator") %>%
+  mutate(id = gsub("t1_", "", id_text_not_null_primary_key),
+         parent_id = gsub("t._", "", top_parent_text)) %>%
+  select(id, parent_id, author_text, text_text, num_comments, ups_integer, downs_integer, score_integer, created_utc_timestamp) %>%
+  mutate(date = date(created_utc_timestamp),
+         year = year(created_utc_timestamp), 
+         month = month(created_utc_timestamp, label = TRUE, abbr = FALSE), 
+         wday = wday(created_utc_timestamp, label = TRUE, abbr = FALSE, week_start = 1),
+         mday = mday(created_utc_timestamp), 
+         hour = hour(created_utc_timestamp),
+         time_day = case_when(
+           hour > 05 & hour < 8 ~ "a - morgens",
+           hour >= 8 & hour < 12 ~ "b - vormittags",
+           hour >= 12 & hour < 14 ~ "c - mittags",
+           hour >= 14 & hour < 18 ~ "d - nachmittags",
+           hour >= 18 & hour < 22 ~ "e - abends",
+           hour >=22 | hour <= 5 ~ "f - nachts"))
+```
+
+```{r}
+data_reddit_links <- data_reddit %>%
+  filter(prefix == "t3",
+         text_text != "[deleted]",
+         author_text != "[deleted]",
+         text_text != "[removed]") %>%
+  mutate(id = gsub("t3_", "", id_text_not_null_primary_key),
+         parent_id = gsub("t._", "", top_parent_text)) %>%
+  select(id, parent_id, prefix, author_text, title_text, num_comments, ups_integer, downs_integer, score_integer, created_utc_timestamp) %>%
+  mutate(date = date(created_utc_timestamp),
+         year = year(created_utc_timestamp),
+         month = month(created_utc_timestamp, label = TRUE, abbr = FALSE), 
+         wday = wday(created_utc_timestamp, label = TRUE, abbr = FALSE, week_start = 1),
+         mday = mday(created_utc_timestamp), 
+         hour = hour(created_utc_timestamp),
+         time_day = case_when(
+           hour > 05 & hour < 8 ~ "a - morgens",
+           hour >= 8 & hour < 12 ~ "b - vormittags",
+           hour >= 12 & hour < 14 ~ "c - mittags",
+           hour >= 14 & hour < 18 ~ "d - nachmittags",
+           hour >= 18 & hour < 22 ~ "e - abends",
+           hour >=22 | hour <= 5 ~ "f - nachts"))
+```
+
+## Data stories around timeline
+
+### When are comments being posted?
+
+- On what date?
+
+```{r}
+data_reddit_comments %>%
+  ggplot(aes(x = date)) +
+    geom_bar() +
+    labs(x = "Datum",
+       y = "Anzahl Kommentare",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Tag gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentsperday.png", width = 20, height = 10, units = "cm")
+```
+
+- In what year?
+
+```{r}
+data_reddit_comments %>%
+  ggplot(aes(x = year)) +
+    geom_bar() +
+    labs(x = "Jahr",
+       y = "Anzahl Kommentare",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Jahr gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentsperyear.png", width = 20, height = 10, units = "cm")
+```
+
+- In what month?
+
+```{r fig.width=4}
+data_reddit_comments %>%
+  ggplot(aes(x = month)) +
+    geom_bar(position = "dodge") +
+    labs(x = "Monat",
+       y = "Anzahl Kommentare",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Monat gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentspermonth.png", width = 20, height = 10, units = "cm")
+```
+
+```{r fig.width=4}
+data_reddit_comments  %>%
+  count(month, year) %>%
+  group_by(month) %>% 
+  summarize(avg = mean(n),
+            sd = sd(n),
+            se = sd/sqrt(length((n)))) %>%
+  ggplot(aes(x = month, y = avg)) +
+    geom_bar(stat = "identity") +
+    #geom_errorbar(aes(ymin=avg-sd, ymax=avg+sd)) +
+    geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=0.4) +
+    labs(x = "Monat",
+       y = "Mittelwert Anzahl Kommentare (+/- Standardfehler)",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Monat gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentspermonth_mean.png", width = 20, height = 10, units = "cm")
+```
+
+- On what weekday?
+
+```{r}
+data_reddit_comments %>%
+  ggplot(aes(x = wday)) +
+    geom_bar() +
+    labs(x = "Wochentag",
+       y = "Anzahl Kommentare",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Wochentag gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentsperweekday.png", width = 20, height = 10, units = "cm")
+```
+
+```{r}
+data_reddit_comments %>%
+  count(month, wday) %>%
+  group_by(wday) %>% 
+  summarize(avg = mean(n),
+            sd = sd(n),
+            se = sd/sqrt(length((n)))) %>%
+  ggplot(aes(x = wday, y = avg)) +
+    geom_bar(stat = "identity") +
+    #geom_errorbar(aes(ymin=avg-sd, ymax=avg+sd)) +
+    geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=0.4) +
+    labs(x = "Wochentag",
+       y = "Mittelwert Anzahl Kommentare (+/- Standardfehler)",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Wochentag gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentsperweekday_mean.png", width = 20, height = 10, units = "cm")
+```
+
+- On what time of day?
+
+```{r}
+data_reddit_comments %>%
+  ggplot(aes(x = hour, color = time_day, fill = time_day)) +
+    geom_bar() +
+    labs(x = "Stunde des Tages",
+       y = "Anzahl Kommentare",
+       color = "Tageszeit",
+       fill = "Tageszeit",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Stunde des Tages gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentspertimeofday.png", width = 20, height = 10, units = "cm")
+```
+
+```{r}
+data_reddit_comments %>%
+  count(month, hour, time_day) %>%
+  group_by(hour, time_day) %>% 
+  summarize(avg = mean(n),
+            sd = sd(n),
+            se = sd/sqrt(length((n)))) %>%
+  ggplot(aes(x = hour, y = avg, color = time_day, fill = time_day)) +
+    geom_bar(stat = "identity") +
+    #geom_errorbar(aes(ymin=avg-sd, ymax=avg+sd)) +
+    geom_errorbar(aes(ymin=avg-se, ymax=avg+se), color = "darkgrey", width=0.4) +
+    labs(x = "Stunde des Tages",
+       y = "Mittelwert Anzahl Kommentare (+/- Standardfehler)",
+       color = "Tageszeit",
+       fill = "Tageszeit",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Kommentare wurden pro Stunde des Tages gepostet?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/commentspertimeofday_mean.png", width = 20, height = 10, units = "cm")
+```
+
+- Zeitzone = UTC
+
+-> positivity/negativity of comments over time of day
+
+```{r}
+# scores by time
+data_reddit_comments %>%
+  group_by(hour, time_day) %>% 
+  summarize(avg = mean(score_integer),
+            sd = sd(score_integer),
+            se = sd/sqrt(length((score_integer)))) %>%
+  ggplot(aes(x = hour, y = avg)) +
+    geom_line() +
+    geom_point(aes(color = time_day)) +
+    geom_errorbar(aes(ymin=avg-se, ymax=avg+se, color = time_day), width=0.4) +
+    labs(x = "Stunde des Tages",
+       y = "Mittelwert Score (Up- vs. Downvotes)",
+       color = "Tageszeit",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie viele Up- vs. Downvotes erhalten Kommentare pro Stunde des Tages?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/udownvotespertimeofday_mean.png", width = 20, height = 10, units = "cm")
+```
+
+---
+
+<br>
+
+```{r}
+# how many authors are posting how many links?
+data_reddit_links %>%
+  count(author_text, sort = TRUE)
+```
+
+```{r}
+data_reddit_comments %>%
+  count(author_text, sort = TRUE)
+```
+
+---
+
+<br>
+
+# Text analysis
+
+https://www.tidytextmining.com/
+
+```{r}
+data(stop_words)
+
+tidy_comments <- data_reddit_comments %>%
+  mutate(text_text = stringi::stri_enc_toutf8(text_text)) %>%
+  unnest_tokens(word, text_text) %>%
+  anti_join(stop_words)
+```
+
+```{r}
+#get_sentiments("afinn")
+#get_sentiments("bing")
+#get_sentiments("nrc")
+
+tidy_comments_bing <- tidy_comments %>%
+  inner_join(get_sentiments("bing")) %>%
+  group_by(id) %>% 
+  count(hour, time_day, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(neg_m_pos = negative - positive,
+         neg_by_pos = (negative + 0.0001) / (positive + 0.0001))
+```
+
+```{r}
+tidy_comments_bing %>%
+  gather(x, y, negative:positive) %>% 
+  group_by(hour, time_day, x) %>%
+  summarise(n = sum(y)) %>%
+  ggplot(aes(x = hour, y = n, color = x, fill = x)) +
+    geom_bar(stat = "identity", position = "dodge", alpha = 0.6) +
+    labs(x = "Stunde des Tages",
+       y = "Anzahl Kommentare",
+       color = "Sentiment",
+       fill = "Sentiment",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie negativ/positiv sind Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/positivenegativepertimeofday.png", width = 20, height = 10, units = "cm")
+```
+
+```{r}
+tidy_comments_bing %>%
+  group_by(hour, time_day) %>% 
+  summarise(mean_neg_m_pos = mean(neg_m_pos)) %>%
+  ggplot(aes(hour, mean_neg_m_pos, fill = time_day, color = time_day)) +
+  geom_bar(stat = "identity", alpha = 0.6) +
+  #coord_flip() +
+    labs(x = "Stunde des Tages",
+       y = "Sentiment\n(Mw negativer - positiver Score Kommentare)",
+       color = "Tageszeit",
+       fill = "Tageszeit",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie negativ/positiv sind Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/sentiment_mean_minus_pertimeofday.png", width = 20, height = 10, units = "cm")
+```
+
+```{r}
+tidy_comments_bing %>%
+  group_by(hour, time_day) %>% 
+  summarise(mean_neg_by_pos = mean(neg_by_pos)) %>%
+  ggplot(aes(hour, mean_neg_by_pos, fill = time_day, color = time_day)) +
+  geom_bar(stat = "identity", alpha = 0.6) +
+  #coord_flip() +
+    labs(x = "Stunde des Tages",
+       y = "Sentiment\n(Mw negativer / positiver Score Kommentare)",
+       color = "Tageszeit",
+       fill = "Tageszeit",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Wie negativ/positiv sind Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/sentiment_mean_by_pertimeofday.png", width = 20, height = 10, units = "cm")
+```
+
+```{r}
+library(wordcloud)
+library(wordcloud2)
+library(RColorBrewer)
+
+tidy_comments_bing %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100, colors = brewer.pal(8, "Dark2")))
+```
+
+```{r}
+tidy_comments_bing %>%
+  count(word) %>%
+  wordcloud2(size=1.6, color='random-dark')
+```
+
+```{r}
+library(reshape2)
+
+tidy_comments %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("indianred3","lightsteelblue3"),
+                   max.words = 100)
+```
+
+```{r}
+tidy_comments_nrc <- tidy_comments %>%
+  inner_join(get_sentiments("nrc")) %>%
+  group_by(id) %>% 
+  count(hour, time_day, sentiment)
+```
+
+```{r}
+tidy_comments_nrc %>%
+  group_by(hour, time_day, sentiment) %>% 
+  count(sentiment) %>%
+  filter(sentiment != "negative",
+         sentiment != "positive") %>%
+  ggplot(aes(x = hour, y = n, fill = sentiment, color = sentiment)) +
+    facet_wrap(vars(sentiment), ncol = 2) +
+    geom_bar(stat = "identity", position = "dodge", alpha = 0.6) +
+    theme(legend.position = "none") +
+    labs(x = "Stunde des Tages",
+       y = "Anzahl Kommentare",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Welche Sentiments haben Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/sentimentnrcpertimeofday.png", width = 20, height = 20, units = "cm")
+```
+
+```{r}
+tidy_comments_nrc %>%
+  group_by(hour, time_day, sentiment) %>% 
+  count(sentiment) %>%
+  filter(sentiment != "negative",
+         sentiment != "positive") %>%
+  group_by(hour, time_day) %>%
+  mutate(freq = n / sum(n))%>%
+  ggplot(aes(x = hour, y = freq, fill = sentiment, color = sentiment)) +
+    geom_bar(stat = "identity", alpha = 0.6) +
+    labs(x = "Stunde des Tages",
+       y = "Relative Häufigkeit der Kommentare",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Welche Sentiments haben Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/sentimentnrcpertimeofday_freq.png", width = 20, height = 10, units = "cm")
+```
+
+```{r}
+tidy_comments_nrc %>%
+  filter(sentiment != "negative",
+         sentiment != "positive") %>%
+  ggplot(aes(x = as.factor(hour), y = n, fill = sentiment, color = sentiment)) +
+    facet_wrap(vars(time_day), ncol = 3, scales = "free_x") +
+    geom_boxplot(alpha = 0.6) +
+    labs(x = "Stunde des Tages",
+       y = "Anzahl Wörter pro Kommentar",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Welche Sentiments haben Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/sentimentnrctimeofday_bp.png", width = 40, height = 15, units = "cm")
+```
+
+```{r}
+perc <- tidy_comments_nrc %>% 
+  filter(sentiment != "negative",
+         sentiment != "positive") %>%
+  group_by(hour, time_day, sentiment) %>%
+  count(hour, time_day, sentiment) %>% 
+  ungroup() %>% 
+  group_by(hour, time_day) %>%
+  mutate(percent = round(n / sum(n) * 100, digits = 2))
+  #mutate(labels = scales::percent(perc))
+```
+
+```{r}
+perc %>%
+  ggplot(aes(x = "", y = percent, fill = sentiment)) + 
+    geom_bar(width = 1, stat = "identity") + 
+    theme_minimal() +
+    coord_polar("y", start = 0) +
+    facet_wrap(vars(hour, time_day), ncol = 8) +
+    labs(x = "Stunde des Tages",
+       y = "Prozent",
+       fill = "Sentiment",
+        title = "Reddit Technology Subreddit", 
+        subtitle = "Welche Sentiments haben Kommentare über den Tag hinweg?",
+        caption = "https://www.reddit.com/dev/api/")
+
+ggsave("Figs/pie_sentimentnrcpertimeofday_freq.png", width = 30, height = 30, units = "cm")
+```
+
+---
+
+<br>
+
+```{r}
+devtools::session_info()
+```
+
