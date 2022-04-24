@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.4.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
 #     display_name: Python [conda env:mlops]
 #     language: python
@@ -36,6 +36,11 @@ data_df = pd.read_csv("../data/raw/transport-short.csv", header=None, nrows=1000
 data_df.head()
 
 # %% [markdown]
+# ## Schnittstelle
+#
+# FastAPI stellt eine Dokumentation der Schnittstelle unter [/docs](http://localhost:8080/docs) zur Verfügung.
+
+# %% [markdown]
 # ## Client Laden
 # Der Client wird mittles [`openapi-python-client` Generator](https://github.com/openapi-generators/openapi-python-client) z.B. wie folgt erzeugt.
 # ```
@@ -49,7 +54,7 @@ from sentiment_model_api_client.models import Input
 from sentiment_model_api_client.api.default import predict_post
 
 # %%
-client = Client(base_url="http://model-daan-eval.ewu.oscp.easycredit.intern", timeout=30)
+client = Client(base_url="http://localhost:8080", timeout=30)
 
 # %%
 for idx, row in data_df.sample(500).iterrows():
