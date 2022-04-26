@@ -23,8 +23,11 @@
 # ![hidden technical debt paper](images/hidden_technical_debt_2015.jpg)
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
+# Heute im Fokus
 # * __Reproduzierbarkeit__: 
 #     * Versionierung von Daten und Code
+# * __Bereitstellung__: 
+#     * Modell API
 # * __Monitoring__:
 #     * Überwachung des Verhaltens des Modells in Produktion
 
@@ -39,13 +42,18 @@
 # ![Architektur Überblick](images/Architecture_Python.png)
 
 # %% [markdown] slideshow={"slide_type": "slide"}
-# # DVC mit Minio
+# # Reproduzierbarkeit mit DVC
 # ![Architektur Überblick](images/Architecture_Minio.png)
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## [DVC](https://dvc.org/)
 #
 # ![DVC_project_versions](https://dvc.org/static/39d86590fa8ead1cd1247c883a8cf2c0/fa73e/project-versions.webp)
+
+# %% [markdown] slideshow={"slide_type": "subslide"}
+# ## DVC Pipelines
+# ![DVC Pipeline Example](https://dagshub.com/docs/tutorial/assets/process_and_train_repo.png)
+# Quelle: https://dagshub.com/
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## DVC Pipelines
@@ -57,7 +65,7 @@
 # ```
 
 # %% slideshow={"slide_type": "fragment"}
-# !dvc run -n load_data --no-exec --force -o data/raw/transport-short.csv -d load_data.py python load_data.py
+# !dvc run -n load_data --force -o data/raw/transport-short.csv -d load_data.py python load_data.py
 
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
@@ -70,7 +78,7 @@
 # ```
 
 # %%
-# !dvc run -n train --no-exec --force -d data/raw/transport-short.csv -d train.py -o models/model/ python train.py
+# !dvc run -n train --force -d data/raw/transport-short.csv -d train.py -o models/model/ python train.py
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## DVC Pipelines
@@ -83,7 +91,7 @@
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## Pipelines
-# In DVC lassen sich Pipelines definieren und damit lasse sich Trainings-Skripte und Daten miteinander verbinden.
+# Mit DVC lassen sich Pipelines definieren um die komplette Pipeline von den Rohdaten bis zum Modell reprouzierbar zu machen.
 # #### `dvc.yaml`
 
 # %% [markdown]
@@ -192,9 +200,14 @@
 #     title="Sentiment Model API",
 #     description="Sentiment Model API",
 #     version="0.1",)
+# ```
 #
+
+# %% [markdown] slideshow={"slide_type": "subslide"}
+# ###### `app.py`
+# ```python
 # # Modell laden
-# model_path = "models/model"
+# sentiment_classifier = pipeline("sentiment-analysis", "models/model")
 #
 # @app.post('/predict', response_model=Sentiment, operation_id="predict_post")
 # async def predict(response: Response, input: Input):
@@ -202,7 +215,6 @@
 #         sentiment = Sentiment.parse_obj(pred)
 #         return sentiment
 # ```
-#
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## API Testen
@@ -235,6 +247,9 @@
 
 # %%
 # !openapi-python-client generate --url http://127.0.0.1:8080/openapi.json
+
+# %% [markdown]
+# [Andere Client-Generatoren](https://openapi-generator.tech/docs/generators/#client-generators)
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## API aufrufen
@@ -327,8 +342,8 @@ predict_post.sync(client=client,
 #     sentiment = Sentiment(**pred)
 #
 #     # Header Monitoring
-#     response.headers["X-model-score"] = str(sentiment.score)`**
-#     response.headers["X-model-sentiment"] = str(sentiment.label)`**
+#     response.headers["X-model-score"] = str(sentiment.score)
+#     response.headers["X-model-sentiment"] = str(sentiment.label)
 #
 #     return sentiment
 #
@@ -344,8 +359,8 @@ predict_post.sync(client=client,
 #         "model_score",
 #         "Predicted score of model",
 #         buckets=(0, .1, .2, .3, .4, .5, .6, .7, .8, .9),
-#         namespace=metric_namespace,
-#         subsystem=metric_subsystem,
+#         namespace="mlops",
+#         subsystem="model",
 #     )
 #     ...
 # ```
@@ -356,8 +371,8 @@ predict_post.sync(client=client,
 #     SENTIMENT = Counter(
 #         "sentiment",
 #         "Predicted sentiment",
-#         namespace=metric_namespace,
-#         subsystem=metric_subsystem,
+#         namespace="mlops",
+#         subsystem="model",
 #         labelnames=("sentiment",)        
 #     )
 #     ...
@@ -385,7 +400,7 @@ predict_post.sync(client=client,
 # from prometheus_fastapi_instrumentator import Instrumentator
 #
 # instrumentator = Instrumentator()
-# instrumentator.add(model_output(metric_namespace="mlops", metric_subsystem="model"))
+# instrumentator.add(model_output())
 #
 # # Prometheus Instrumentator verknüpfen
 # instrumentator.instrument(app).expose(app)
@@ -397,6 +412,8 @@ predict_post.sync(client=client,
 # [Model API](http://localhost:8080/docs)
 #
 # [Metrics Endpoint](http://localhost:8080/metrics)
+#
+# [Prometheus](http://localhost:9090/graph?g0.expr=mlops_model_model_score_bucket%20&g0.tab=1&g0.stacked=0&g0.show_exemplars=0&g0.range_input=1h)
 #
 # [Grafana](http://localhost:3000)
 
