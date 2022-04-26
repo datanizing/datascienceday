@@ -38,16 +38,22 @@ openapi-python-client generate --url http://127.0.0.1:8080/openapi.json
 Voraussetzung: 
 * lokale [Docker](https://docs.docker.com/get-docker/) Installation
 
+Da zunächst kein `modelapi` Image vorhanden ist, wird beim ersten Starten `docker-compose` einen Fehler werfen. 
+Das kann vermieden werden, indem der entsprechende Abschnitt (`modelapi:`) auskommentiert wird und erst nach dem Bauen
+des Image wieder einkommentiert wird.
+
 ```
-docker build -t modelapi --network="host" .
-docker-compose build
 docker-compose up
 ```
 
-Mit dem Skript `notebooks/call_api.pct.py` können Aufrufe generiert werden:
+Dann das Image bauen:
 ```
-cd notebooks
-python call_api.pct.py
+docker build -t modelapi --network="host" .
+```
+Anschließend alle Services neu starten:
+```
+docker-compose down
+docker-compose up
 ```
 
 Das Dashboard kann dann unter http://localhost:3000/ nach dem Login  (User: admin, Passwort: 12345) im Bereich Dashboards ("Model Score") aufgerufen werden.
@@ -57,13 +63,9 @@ Inspired by [Jeremy Jordan
 A simple solution for monitoring ML systems.
 ](https://www.jeremyjordan.me/ml-monitoring/)
 
-
-
-
-
 ## Referenzen:
 * [fastAPI](https://fastapi.tiangolo.com/)
-* [pydantic]()
+* [pydantic](https://pydantic-docs.helpmanual.io/)
 * [dvc](https://dvc.org/)
 * [openapi-python-client](https://github.com/openapi-generators/openapi-python-client)
 * [prometheus-fastapi-instrumentator](https://github.com/trallnag/prometheus-fastapi-instrumentator)

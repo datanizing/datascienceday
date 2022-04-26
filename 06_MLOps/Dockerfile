@@ -18,7 +18,6 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY dvc.yaml dvc.yaml
 COPY dvc.lock dvc.lock
 COPY .dvc/config .dvc/config
-COPY .dvc/config.local .dvc/config.local
 
 RUN dvc config core.no_scm true && \
     dvc pull models/model/
@@ -35,4 +34,4 @@ USER 1001
 
 WORKDIR /app
 
-CMD python app.py
+CMD uvicorn app:app --host=0.0.0.0 --port=8080

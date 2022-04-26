@@ -35,6 +35,14 @@
 # * Verzeichnis: `06_MLOps`
 
 # %% [markdown] slideshow={"slide_type": "slide"}
+# # Modell aus "Sprachmodelle und Sentiment-Analyse" (Oliver Zeigermann)
+# ![Architektur Überblick](images/Architecture_Python.png)
+
+# %% [markdown] slideshow={"slide_type": "slide"}
+# # DVC mit Minio
+# ![Architektur Überblick](images/Architecture_Minio.png)
+
+# %% [markdown] slideshow={"slide_type": "subslide"}
 # ## [DVC](https://dvc.org/)
 #
 # ![DVC_project_versions](https://dvc.org/static/39d86590fa8ead1cd1247c883a8cf2c0/fa73e/project-versions.webp)
@@ -76,21 +84,18 @@
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## Pipelines
 # In DVC lassen sich Pipelines definieren und damit lasse sich Trainings-Skripte und Daten miteinander verbinden.
+# #### `dvc.yaml`
 
 # %% [markdown]
-# #### `dvc.yaml`
 # ```yaml
 # stages:
-#   load_data:
-#     cmd: python load_data.py
-#     outs:
-#     - data/raw/transport-short.csv
 #   train:
 #     cmd: python train.py
 #     deps:
 #     - data/raw/transport-short.csv
 #     outs:
 #     - models/model/
+#
 # ```
 
 # %% [markdown] slideshow={"slide_type": "subslide"}
@@ -150,6 +155,10 @@
 # !dvc pull
 
 # %% [markdown] slideshow={"slide_type": "slide"}
+# # Docker Image mit API
+# ![Architektur Überblick](images/Architecture_Docker.png)
+
+# %% [markdown] slideshow={"slide_type": "subslide"}
 # # Sentiment API
 #
 # Mittels [FastAPI](https://fastapi.tiangolo.com/) wird eine API für das Sentiment Model bereitgestellt.
@@ -157,6 +166,7 @@
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ### Datenmodell für Ein- und Ausgabe
 #
+# ##### `app.py`
 # ```python
 # from pydantic import BaseModel, Field
 #
@@ -173,6 +183,7 @@
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ### API Endpunkt
 #
+# ##### `app.py`
 # ```python
 # from fastapi import FastAPI, Response
 #
@@ -198,6 +209,7 @@
 #
 # [uvicorn Webserver](https://www.uvicorn.org/)
 #
+# ##### `app.py`
 # ```python
 # if __name__ == "__main__":
 #     import uvicorn
@@ -221,13 +233,16 @@
 # openapi-python-client generate --url http://127.0.0.1/openapi.json
 # ```
 
+# %%
+# !openapi-python-client generate --url http://127.0.0.1:8080/openapi.json
+
 # %% [markdown] slideshow={"slide_type": "subslide"}
 # ## API aufrufen
 
 # %% slideshow={"slide_type": "fragment"}
 import sys
-sys.path.append("sentiment-model-api-client")
-from sentiment_model_api_client import Client
+sys.path.append("./sentiment-model-api-client")
+from sentiment_model_api_client.client import Client
 from sentiment_model_api_client.models import Input
 from sentiment_model_api_client.api.default import predict_post
 
@@ -237,6 +252,66 @@ predict_post.sync(client=client,
                   json_body=Input(sentence=
                                   "I wonder how close a drone has to get to private property before someone "
                                   "can shoot it down, because that will definitely happen."))
+
+# %% [markdown] slideshow={"slide_type": "subslide"}
+# ## Docker Images bauen
+#
+# ##### `Dockerfile` (Auszug)
+# ```Dockerfile
+# FROM docker.io/bitnami/python:3.8.13
+# ...
+# RUN pip install -r requirements.txt --no-cache-dir 
+#
+# ...
+# RUN dvc config core.no_scm true && \
+#     dvc pull models/model/
+#
+# CMD uvicorn app:app --host=0.0.0.0 --port=8080
+# ```
+
+# %% slideshow={"slide_type": "subslide"}
+# !docker build -t modelapi --network="host" .
+
+# %% [markdown] slideshow={"slide_type": "slide"}
+# # Orchestrierung mit Docker
+# ![Architektur Überblick](images/Architecture_DockerCompose.png)
+
+# %% [markdown] slideshow={"slide_type": "subslide"}
+# ## Docker-Compose Datei
+# ```yaml
+# version: "2"
+# services:
+#     modelapi:
+#         image: modelapi
+#         expose:
+#         - 8080
+#         ports:
+#         - 8080:8080
+#
+#     minio:
+#         image: docker.io/bitnami/minio:2021.6.17
+#         ...
+#         
+#     prometheus:
+#         image: docker.io/bitnami/prometheus:2
+#         ...
+#
+#     grafana:
+#         image: docker.io/bitnami/grafana:7
+#         ...
+# ```
+#
+
+# %% [markdown] slideshow={"slide_type": "-"}
+# Starten mit
+#
+# ```
+# docker-compose up
+# ```
+
+# %% [markdown] slideshow={"slide_type": "slide"}
+# # Monitoring mit Prometheus/Grafana
+# ![Architektur Überblick](images/Architecture_Grafana.png)
 
 # %% [markdown] slideshow={"slide_type": "slide"}
 # # Monitoring
